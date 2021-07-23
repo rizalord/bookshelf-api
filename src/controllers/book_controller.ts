@@ -12,7 +12,69 @@ import bookRepository from "../repositories/book_repository"
 
 class BookController {
   index(request: Request, h: ResponseToolkit) {
-    return h.response(new SuccessResponseObject(null, bookRepository.findAll()))
+    const {
+      reading,
+      finished,
+      name,
+    }: {
+      reading: number
+      finished: number
+      name: string
+    } = request.query as {
+      reading: number
+      finished: number
+      name: string
+    }
+
+    if (reading != undefined) {
+      const isReading = reading == 1
+
+      if (isReading) {
+        return h.response(
+          new SuccessResponseObject(null, {
+            books: bookRepository.findReading(),
+          })
+        )
+      }
+
+      return h.response(
+        new SuccessResponseObject(null, {
+          books: bookRepository.findUnreading(),
+        })
+      )
+    }
+
+    if (finished != undefined) {
+      const isFinish = finished == 1
+
+      if (isFinish) {
+        return h.response(
+          new SuccessResponseObject(null, {
+            books: bookRepository.findFinished(),
+          })
+        )
+      }
+
+      return h.response(
+        new SuccessResponseObject(null, {
+          books: bookRepository.findUnfinished(),
+        })
+      )
+    }
+
+    if (name != undefined) {
+      return h.response(
+        new SuccessResponseObject(null, {
+          books: bookRepository.findIncludes(name),
+        })
+      )
+    }
+
+    return h.response(
+      new SuccessResponseObject(null, {
+        books: bookRepository.findAll(),
+      })
+    )
   }
 
   find(request: Request, h: ResponseToolkit) {
@@ -77,6 +139,16 @@ class BookController {
         updatedAt,
       }
 
+      if (name === undefined) {
+        return h
+          .response(
+            new FailResponseObject(
+              "Gagal menambahkan buku. Mohon isi nama buku"
+            )
+          )
+          .code(400)
+      }
+
       if (bookRepository.create(book)) {
         return h
           .response(
@@ -84,7 +156,7 @@ class BookController {
               bookId: id,
             })
           )
-          .code(200)
+          .code(201)
       } else {
         return h
           .response(new ErrorResponseObject("Buku gagal ditambahkan"))
@@ -122,6 +194,14 @@ class BookController {
           new FailResponseObject("Gagal memperbarui buku. Id tidak ditemukan")
         )
         .code(404)
+    }
+
+    if (name === undefined) {
+      return h
+        .response(
+          new FailResponseObject("Gagal memperbarui buku. Mohon isi nama buku")
+        )
+        .code(400)
     }
 
     if (readPage > pageCount)
