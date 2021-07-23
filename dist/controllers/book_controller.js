@@ -9,7 +9,37 @@ const http_1 = require("../common/http");
 const book_repository_1 = __importDefault(require("../repositories/book_repository"));
 class BookController {
     index(request, h) {
-        return h.response(new http_1.SuccessResponseObject(null, book_repository_1.default.findAll()));
+        const { reading, finished, name, } = request.query;
+        if (reading != undefined) {
+            const isReading = reading == 1;
+            if (isReading) {
+                return h.response(new http_1.SuccessResponseObject(null, {
+                    books: book_repository_1.default.findReading(),
+                }));
+            }
+            return h.response(new http_1.SuccessResponseObject(null, {
+                books: book_repository_1.default.findUnreading(),
+            }));
+        }
+        if (finished != undefined) {
+            const isFinish = finished == 1;
+            if (isFinish) {
+                return h.response(new http_1.SuccessResponseObject(null, {
+                    books: book_repository_1.default.findFinished(),
+                }));
+            }
+            return h.response(new http_1.SuccessResponseObject(null, {
+                books: book_repository_1.default.findUnfinished(),
+            }));
+        }
+        if (name != undefined) {
+            return h.response(new http_1.SuccessResponseObject(null, {
+                books: book_repository_1.default.findIncludes(name),
+            }));
+        }
+        return h.response(new http_1.SuccessResponseObject(null, {
+            books: book_repository_1.default.findAll(),
+        }));
     }
     find(request, h) {
         const { bookId } = request.params;
@@ -50,12 +80,17 @@ class BookController {
                 insertedAt,
                 updatedAt,
             };
+            if (name === undefined) {
+                return h
+                    .response(new http_1.FailResponseObject("Gagal menambahkan buku. Mohon isi nama buku"))
+                    .code(400);
+            }
             if (book_repository_1.default.create(book)) {
                 return h
                     .response(new http_1.SuccessResponseObject("Buku berhasil ditambahkan", {
                     bookId: id,
                 }))
-                    .code(200);
+                    .code(201);
             }
             else {
                 return h
@@ -78,6 +113,11 @@ class BookController {
             return h
                 .response(new http_1.FailResponseObject("Gagal memperbarui buku. Id tidak ditemukan"))
                 .code(404);
+        }
+        if (name === undefined) {
+            return h
+                .response(new http_1.FailResponseObject("Gagal memperbarui buku. Mohon isi nama buku"))
+                .code(400);
         }
         if (readPage > pageCount)
             return h

@@ -16,10 +16,66 @@ class BookRepository {
         this.books = JSON.parse(file);
     }
     findAll() {
-        return this.books;
+        return this.books.map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
+    }
+    findFinished() {
+        return this.books
+            .slice(0)
+            .filter((e) => e.finished == true)
+            .map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
+    }
+    findUnfinished() {
+        return this.books
+            .slice(0)
+            .filter((e) => e.finished != true)
+            .map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
+    }
+    findReading() {
+        return this.books
+            .slice(0)
+            .filter((e) => e.reading == true)
+            .map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
+    }
+    findUnreading() {
+        return this.books
+            .slice(0)
+            .filter((e) => e.reading != true)
+            .map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
+    }
+    findIncludes(name) {
+        return this.books
+            .slice(0)
+            .filter((e) => e.name.toLocaleLowerCase().includes(name.toLowerCase()))
+            .map((e) => ({
+            id: e.id,
+            name: e.name,
+            publisher: e.publisher,
+        }));
     }
     findById(id) {
-        const foundBooks = this.books.filter((e) => e.id === id);
+        const foundBooks = this.books
+            .slice(0)
+            .filter((e) => e.id === id);
         if (foundBooks.length != 0)
             return foundBooks[0];
     }
